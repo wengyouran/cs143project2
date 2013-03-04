@@ -23,10 +23,6 @@ class BTLeafNode {
   public:
 	BTLeafNode(){
 		keyCount = 0;
-		for(int i=0;i<PageFile::PAGE_SIZE;i+=4){
-			*((int*)&(buffer[i])) = 8;
-		}
-		cout<<endl<<"CONSTRUCTOR"<<endl<<"AHHHHHHHHHHHHHHHHHHHHH!!!!!!!!!"<<endl;
 	}
    /**
     * Insert the (key, rid) pair to the node.
@@ -109,12 +105,15 @@ class BTLeafNode {
 
 	PageId getNodeId();
 	
+	/*test*/
+	int printKeys();
+	
   private:
    /**
     * The main memory buffer for loading the content of the disk page 
     * that contains the node.
     */
-    	char buffer[PageFile::PAGE_SIZE];
+    char buffer[PageFile::PAGE_SIZE];
 	int keyCount;
 	int getKey(int location);
 	int getRecord(int location, RecordId& rid);
@@ -130,6 +129,9 @@ class BTLeafNode {
  */
 class BTNonLeafNode {
   public:
+	BTNonLeafNode(){
+		keyCount = 0;
+	}
    /**
     * Insert a (key, pid) pair to the node.
     * Remember that all keys inside a B+tree node should be kept sorted.
@@ -197,6 +199,9 @@ class BTNonLeafNode {
     RC write(PageId pid, PageFile& pf);
 	
 	PageId getNodeId();
+	
+	/*TEST*/
+	int pidAt(int x);
 
   private:
    /**

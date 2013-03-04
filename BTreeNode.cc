@@ -25,13 +25,11 @@ int BTLeafNode::insertRecordId(const RecordId rid, int location){
 	return 0;
 }
 int BTLeafNode::incrementKeyCount(){
-	cout<<"      keyCount is incremented!!!"<<endl;
 	keyCount++;
 	memcpy((void*)(&buffer[PageFile::PAGE_SIZE-8]), (void*)&(keyCount), sizeof(int)); 
 	return 0;
 }
 bool BTLeafNode::isNodeFull(){
-	//cout<<keyCount<<" >= "<<LEAF_NUM_ENTRIES-1<<endl;
 	return (keyCount >= (LEAF_NUM_ENTRIES-1));
 }
 RC BTLeafNode::getNodeId(){
@@ -46,22 +44,11 @@ RC BTLeafNode::getNodeId(){
 RC BTLeafNode::read(PageId pid, PageFile& pf){ 
 	RC readError = 0;
 	RC openError = 0;
-	//openError = pf.open(BPTREE,'r');
 	if(openError != 0)
 		return openError;
-	//cout<<"3) keycount is"<<keyCount<<endl;
-	//cout<<"buffer is "<<*((int*)(&buffer[PageFile::PAGE_SIZE-8]))<<endl;
-	cout<<"IN Read"<<endl;
-	//cout<<"  pid is "<<pid<<endl;
 	readError = pf.read(pid, (void*)buffer);
-	//cout<<"buffer is "<<*((int*)(&buffer[PageFile::PAGE_SIZE-8]))<<endl;
-	//cout<<"3) keycount is"<<keyCount<<endl;
-	//cout<<*((int*)(&buffer[PageFile::PAGE_SIZE-8]))<<endl;
-	//cout<<*((int*)(&buffer[8]))<<endl;
-	memcpy((int*)&(keyCount), (int*)(&buffer[PageFile::PAGE_SIZE-8]), sizeof(int)); 
-	cout<<"KeyCount in Read) keyCount is"<<keyCount<<endl;	
+	memcpy((int*)&(keyCount), (int*)(&buffer[PageFile::PAGE_SIZE-8]), sizeof(int)); 	
 	leafNodePid = pid;
-	//pf.close();
 	return readError;
 }
     
@@ -74,19 +61,10 @@ RC BTLeafNode::read(PageId pid, PageFile& pf){
 RC BTLeafNode::write(PageId pid, PageFile& pf){ 
 	RC writeError = 0;
 	RC openError = 0;
-	//openError = pf.open(BPTREE,'w');
 	if(openError != 0)
 		return openError;
-	cout<<"KeyCount before Write) keycCount is"<<keyCount<<endl;
-	//cout<<*((int*)(&buffer[PageFile::PAGE_SIZE-8]))<<endl;
-	//cout<<*((int*)(&buffer[8]))<<endl;
 	memcpy((int*)(&buffer[PageFile::PAGE_SIZE-8]),(int*)&(keyCount), sizeof(int));
-	//cout<<"2) keycount is"<<keyCount<<endl;
-	//cout<<"buffer is "<<*((int*)(&buffer[PageFile::PAGE_SIZE-8]))<<endl;
-	//cout<<"pid is "<<pid<<endl;
 	writeError = pf.write(pid, (void*)(buffer));
-	//cout<<"buffer is "<<*((int*)(&buffer[PageFile::PAGE_SIZE-8]))<<endl;	
-	//pf.close();
 	leafNodePid = pid;
 	return writeError; 
 }
@@ -118,7 +96,6 @@ RC BTLeafNode::insert(int key, const RecordId& rid){
 		lastByte = eidCount*12;
 		insertRecordId(rid, lastByte);
 		insertKey(key, lastByte);
-		cout<<"      keyCount is incremented!!!"<<endl;
 		keyCount++;
 	}else{
 		keyCompare = getKey(eidCompare);
@@ -126,14 +103,13 @@ RC BTLeafNode::insert(int key, const RecordId& rid){
 			return insertError;
 		}
 		firstByte = eidCompare*12;
-		lastByte = eidCount*12-1;
+		lastByte = eidCount*12;
 		int copySize = lastByte - firstByte;
 		char* tempBuffer = new char[copySize];
 		memcpy((void*)tempBuffer, (void*)(&buffer[firstByte]), copySize);
 		insertRecordId(rid, firstByte);
 		insertKey(key, firstByte);
-		memcpy((void*)(&buffer[firstByte+LEAF_ENTRY_SIZE]), (void*)tempBuffer, copySize);
-		cout<<"      keyCount is incremented!!!"<<endl;		
+		memcpy((void*)(&buffer[firstByte+LEAF_ENTRY_SIZE]), (void*)tempBuffer, copySize);	
 		keyCount++;
 	}
 	return 0; 
@@ -270,12 +246,10 @@ RC BTNonLeafNode::getNodeId(){
 RC BTNonLeafNode::read(PageId pid, PageFile& pf){
 	RC readError = 0;
 	RC openError = 0;
-	//openError = pf.open(BPTREE,'r');
 	if(openError != 0)
 		return openError;
 	readError = pf.read(pid, (void*)buffer);
 	memcpy((void*)&(keyCount), (void*)(&buffer[PageFile::PAGE_SIZE-8]), sizeof(int)); 
-	//pf.close();
 	nonLeafNodePid = pid;
 	return readError;
 }
@@ -289,11 +263,9 @@ RC BTNonLeafNode::read(PageId pid, PageFile& pf){
 RC BTNonLeafNode::write(PageId pid, PageFile& pf){
 	RC writeError = 0;
 	RC openError = 0;
-	//openError = pf.open(BPTREE,'w');
 	if(openError != 0)
 		return openError;
 	writeError = pf.write(pid, (void*)(buffer));
-	//pf.close();
 	nonLeafNodePid = pid;
 	return writeError;
 }
@@ -325,6 +297,7 @@ RC BTNonLeafNode::insert(int key, PageId pid){
 		lastByte = eidCount*8;
 		insertPid(pid, lastByte);
 		insertKey(key, lastByte);
+		cout<<"   Key Count is incremented!!!"<<endl;
 		keyCount++;
 	}else{
 		keyCompare = getKey(eidCompare);
@@ -332,7 +305,7 @@ RC BTNonLeafNode::insert(int key, PageId pid){
 			return insertError;
 		}
 		firstByte = eidCompare*8;
-		lastByte = eidCount*8-1;
+		lastByte = eidCount*8;
 		int copySize = lastByte - firstByte;
 		char* tempBuffer = new char[copySize];
 		memcpy((void*)tempBuffer, ((void*)(&buffer[firstByte])), copySize);
@@ -340,6 +313,7 @@ RC BTNonLeafNode::insert(int key, PageId pid){
 		insertKey(key, firstByte);
 		memcpy(((void*)(&buffer[firstByte+NON_LEAF_ENTRY_SIZE])), (void*)tempBuffer, copySize);
 		keyCount++;
+		cout<<"   Key Count is incremented!!!"<<endl;
 	}
 	return 0; 
 }
@@ -414,3 +388,26 @@ RC BTNonLeafNode::initializeRoot(PageId pid1, int key, PageId pid2){
 	insertLastPid(pid2);
 	return 0;
 }
+
+/*Test Functions*/
+/*int BTLeafNode::pidAt(int x){
+	
+}*/
+int BTNonLeafNode::pidAt(int x){
+	if(x<keyCount){
+		return getPid(x*8);
+	}else if(x==keyCount){
+		return getLastPid();
+	}
+}
+int BTLeafNode::printKeys(){
+	cout<<"In Print Keys Leaf Node: keyCount is "<<getKeyCount()<<endl;
+	int limit = getKeyCount()*12;
+	for(int i=8; i<limit; i+=12){
+		cout<<*((int*)(&buffer[i]))<<", ";
+	}
+	cout<<endl;
+}
+/*int BTNonLeafNode::printKeys(){
+	
+}*/

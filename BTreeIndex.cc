@@ -39,8 +39,6 @@ RC BTreeIndex::open(const string& indexname, char mode){
 	
 	openError = pf.open(indexname,mode);
 	nextPid = pf.endPid();
-	cout<<"OPEN ERROR #"<<openError<<endl;
-	cout<<"NEXT PID #"<<nextPid<<endl;
 	
 	if(openError != 0)
 		return openError;
@@ -94,36 +92,23 @@ int BTreeIndex::insertRecursively(int &key, const RecordId& rid, int &height, Pa
 		Base Case: Reached the leaf node
 	*/
 	if(height == 1){
-		cout<<"a"<<endl;
 		BTLeafNode currentNode;
-		cout<<"KeyCount before read = "<<currentNode.getKeyCount()<<endl;
-		//cout<<"the currentpid before read = "<<currentPid<<endl;
 		currentNode.read(currentPid, pf);
-		//cout<<"Keycount should be "<<*((int*)(&(currentNode.buffer[8])))<<endl;
-		cout<<"KeyCount after read = "<<currentNode.getKeyCount()<<endl;
-		
-		cout<<"Current Pid = "<< currentPid<<endl;
 		if(currentNode.isNodeFull()){
-		cout<<"b"<<endl;
 			BTLeafNode siblingNode;
 			int siblingKey;
 			currentNode.insertAndSplit(key, rid, siblingNode, siblingKey);
-		cout<<"c"<<endl;
 			siblingNode.setNextNodePtr(currentNode.getNextNodePtr());
 			currentNode.setNextNodePtr(nextPid);
-		cout<<"d"<<endl;
 			currentNode.write(currentNode.getNodeId(), pf);
 			siblingNode.write(nextPid, pf);
 			rightPid = nextPid;
-		cout<<"e"<<endl;
 			nextPid = pf.endPid();
 			key = siblingKey;
 			return 1;
 		}else{
-			cout<<"f"<<endl;
 			currentNode.insert(key, rid);
 			currentNode.write(currentPid,pf);
-			cout<<"g"<<endl;
 			return 0;
 		}
 	}
@@ -148,6 +133,7 @@ int BTreeIndex::insertRecursively(int &key, const RecordId& rid, int &height, Pa
 			return 1;
 		}else{
 			currentNode.insert(key, rightPid);
+			currentNode.write(currentPid,pf);
 			return 0;
 		}
 	}else{
@@ -162,45 +148,31 @@ RC BTreeIndex::insert(int key, const RecordId& rid){
 		3) Write the leaf node into the pagefile
 		4) keep track of which pagefiles were used with nextPid
 	*/
-	cout<<"INSERT START!"<<endl;
-	cout<<"tree height is "<<treeHeight<<endl;
 	if(treeHeight <= 0){
-		cout<<"1"<<endl;
 		BTLeafNode initialNode = BTLeafNode();
-
-		cout<<"KeyCount before insert = "<<initialNode.getKeyCount()<<endl;
-
 		initialNode.insert(key, rid);
-		cout<<"KeyCount after insert = "<<initialNode.getKeyCount()<<endl;
-		cout<<"rootpid is "<<rootPid<<" nextpid is "<<nextPid<<endl;
 		rootPid = nextPid;
 		initialNode.write(rootPid, pf);
 		nextPid = pf.endPid();
 		treeHeight++;
-		cout<<"2"<<endl;
 	}else{
-		cout<<"3"<<endl;
 		PageId leftPid = rootPid;
 		PageId rightPid;
 		int height = treeHeight;
 		int x = insertRecursively(key,rid,height, leftPid, rightPid);
-		cout<<"4"<<endl;
 		if(x==0){
 			return 0;
 		}else if(x==1){
-		cout<<"5"<<endl;
 			BTNonLeafNode parentNode = BTNonLeafNode();
 			parentNode.initializeRoot(leftPid, key, rightPid);
 			parentNode.write(nextPid, pf);
 			rootPid = parentNode.getNodeId();
 			nextPid = pf.endPid();
 			treeHeight++;
-		cout<<"6"<<endl;
 			return 0;
 		}else{
 			return -1;
 		}
-		//treeHeight++;
 	}
 	return 0;
 }
@@ -289,4 +261,33 @@ RC BTreeIndex::readForward(IndexCursor& cursor, int& key, RecordId& rid){
 		cursor.eid++;
 	}
     return 0;
+}
+
+/*Test Functions*/
+int BTreeIndex::printKeysR(int& height, int& pid){
+	cout<<"PRINTKEYS RECURSIVELY"<<endl;
+	if(height == 1){
+		cout<<"HEIGHT == 1"<<endl;
+		BTLeafNode leaf;
+		leaf.read(pid,pf);
+		leaf.printKeys();
+		return 0;
+	}
+	BTNonLeafNode nonleaf;
+	nonleaf.read(pid,pf);
+	height = height -1;
+	cout<<nonleaf.getKeyCount()<<endl;
+	for(int i=0; i<=nonleaf.getKeyCount();i++){
+		pid = nonleaf.pidAt(i);
+		printKeysR(height,pid);
+		cout<<endl<<endl;
+	}
+	return 0;
+	
+}
+int BTreeIndex::printKeys(){
+	cout<< "Print keys"<<endl;
+	int height = treeHeight;
+	int pid = rootPid;
+	return printKeysR(height, pid);
 }

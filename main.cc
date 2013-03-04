@@ -32,12 +32,12 @@ int main()
 		myTree.insert(key,rid);
 		key+=2;
 	}
-	/*
 	key = 2;
-	for(int i=0; i<11; i++){
+	for(int i=0; i<100; i++){
 		myTree.insert(key,rid);
 		key+=2;
 	}
-	*/
+	myTree.printKeys();
+	myTree.close();
   return 0;
 }
