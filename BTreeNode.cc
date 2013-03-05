@@ -93,17 +93,17 @@ RC BTLeafNode::insert(int key, const RecordId& rid){
 	int firstByte, lastByte;
 	insertError = locate(key, eidCompare);
 	if(insertError != 0 || eidCount == 0){
-		lastByte = eidCount*12;
+		lastByte = eidCount*LEAF_ENTRY_SIZE;
 		insertRecordId(rid, lastByte);
 		insertKey(key, lastByte);
 		keyCount++;
 	}else{
-		keyCompare = getKey(eidCompare);
+		keyCompare = getKey(eidCompare*LEAF_ENTRY_SIZE);
 		if(keyCompare == key){
 			return insertError;
 		}
-		firstByte = eidCompare*12;
-		lastByte = eidCount*12;
+		firstByte = eidCompare*LEAF_ENTRY_SIZE;
+		lastByte = eidCount*LEAF_ENTRY_SIZE;
 		int copySize = lastByte - firstByte;
 		char* tempBuffer = new char[copySize];
 		memcpy((void*)tempBuffer, (void*)(&buffer[firstByte]), copySize);
@@ -135,10 +135,10 @@ RC BTLeafNode::insertAndSplit(int key, const RecordId& rid, BTLeafNode& sibling,
 	}
 	int tempKey;
 	RecordId tempRid;
-	siblingKey = getKey(moveAmnt*12);
+	siblingKey = getKey(moveAmnt*LEAF_ENTRY_SIZE);
 	for(int i=moveAmnt; i<keyCount; i++){
-		tempKey = getKey(i*12);
-		getRecord(i*12, tempRid);
+		tempKey = getKey(i*LEAF_ENTRY_SIZE);
+		getRecord(i*LEAF_ENTRY_SIZE, tempRid);
 		sibling.insert(tempKey,tempRid);
 	}
 	keyCount = moveAmnt;
@@ -157,7 +157,7 @@ RC BTLeafNode::locate(int searchKey, int& eid){
 	int count = getKeyCount();
 	int locateError = -1012;
 	for(int i=0; i<count; i++){
-		if(searchKey <= getKey(i*12)){
+		if(searchKey < getKey(i*LEAF_ENTRY_SIZE)){
 			eid = i;
 			locateError = 0;
 			break;
@@ -231,7 +231,7 @@ int BTNonLeafNode::incrementKeyCount(){
 	return 0;
 }
 bool BTNonLeafNode::isNodeFull(){
-	return (keyCount >= (LEAF_NUM_ENTRIES-1));
+	return (keyCount >= (NON_LEAF_ENTRIES-1));
 }
 RC BTNonLeafNode::getNodeId(){
 	return nonLeafNodePid;
@@ -295,12 +295,12 @@ RC BTNonLeafNode::insert(int key, PageId pid){
 	int firstByte, lastByte;
 	insertError = locate(key, eidCompare);
 	if(eidCount == 0){
-		lastByte = eidCount*8;
+		lastByte = eidCount*NON_LEAF_ENTRY_SIZE;
 		insertPid(pid, lastByte);
 		insertKey(key, lastByte);
 		keyCount++;
 	}else if(insertError < 0){
-		lastByte = eidCount*8;
+		lastByte = eidCount*NON_LEAF_ENTRY_SIZE;
 		insertPid(getLastPid(), lastByte);
 		insertKey(key, lastByte);
 		insertLastPid(pid);
@@ -310,8 +310,8 @@ RC BTNonLeafNode::insert(int key, PageId pid){
 		if(keyCompare == key){
 			return insertError;
 		}
-		firstByte = eidCompare*8;
-		lastByte = eidCount*8;
+		firstByte = eidCompare*NON_LEAF_ENTRY_SIZE;
+		lastByte = eidCount*NON_LEAF_ENTRY_SIZE;
 		int copySize = lastByte - firstByte;
 		char* tempBuffer = new char[copySize];
 		memcpy((void*)tempBuffer, ((void*)(&buffer[firstByte])), copySize);
@@ -327,7 +327,7 @@ RC BTNonLeafNode::locate(int searchKey, int& eid){
 	int count = getKeyCount();
 	int locateError = -1012;
 	for(int i=0; i<count; i++){
-		if(searchKey <= getKey(i*8)){
+		if(searchKey < getKey(i*NON_LEAF_ENTRY_SIZE)){
 			eid = i;
 			locateError = 0;
 			break;
@@ -356,10 +356,11 @@ RC BTNonLeafNode::insertAndSplit(int key, PageId pid, BTNonLeafNode& sibling, in
 	}
 	int tempKey;
 	PageId tempPid;
-	midKey = getKey(moveAmnt*8);
+	midKey = getKey(moveAmnt*NON_LEAF_ENTRY_SIZE);
+	cout<<"Amount being moved is "<< moveAmnt<<" && Midkey is "<< midKey<< endl;
 	for(int i=moveAmnt; i<keyCount; i++){
-		tempKey = getKey(i*8);
-		tempPid=getPid(i*8);
+		tempKey = getKey(i*NON_LEAF_ENTRY_SIZE);
+		tempPid=getPid(i*NON_LEAF_ENTRY_SIZE);
 		sibling.insert(tempKey,tempPid);
 	}
 	keyCount = moveAmnt;
@@ -378,7 +379,7 @@ RC BTNonLeafNode::locateChildPtr(int searchKey, PageId& pid){
 	if(locate(searchKey, eid) < 0 ){
 		pid = getLastPid();
 	}else{
-		pid = getPid(eid*8);
+		pid = getPid(eid*NON_LEAF_ENTRY_SIZE);
 	}
 	return 0;
 }
@@ -404,14 +405,14 @@ RC BTNonLeafNode::initializeRoot(PageId pid1, int key, PageId pid2){
 }*/
 int BTNonLeafNode::pidAt(int x){
 	if(x<keyCount){
-		return getPid(x*8);
+		return getPid(x*NON_LEAF_ENTRY_SIZE);
 	}else if(x==keyCount){
 		return getLastPid();
 	}
 }
 int BTLeafNode::printKeys(){
-	int limit = getKeyCount()*12;
-	for(int i=8; i<limit; i+=12){
+	int limit = getKeyCount()*LEAF_ENTRY_SIZE;
+	for(int i=8; i<limit; i+=LEAF_ENTRY_SIZE){
 		cout<<*((int*)(&buffer[i]))<<", ";
 	}
 	cout<<endl;
