@@ -279,8 +279,8 @@ int BTreeIndex::printKeysR(int& height, int& pid){
 	cout<<nonleaf.getKeyCount()<<endl;
 	for(int i=0; i<=nonleaf.getKeyCount();i++){
 		pid = nonleaf.pidAt(i);
+		cout<<"           PID IS "<<pid<<endl;
 		printKeysR(height,pid);
-		cout<<endl<<endl;
 	}
 	return 0;
 	

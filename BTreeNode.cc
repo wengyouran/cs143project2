@@ -211,7 +211,7 @@ int BTNonLeafNode::getPid(int location){
 	return *((int*)(&buffer[location]));
 }
 int BTNonLeafNode::getLastPid(){
-	return *((int*)(&buffer[PageFile::PAGE_SIZE]));
+	return *((int*)(&buffer[PageFile::PAGE_SIZE-4]));
 }
 int BTNonLeafNode::insertKey(int x, int location){
 	memcpy((void*)(&buffer[location+4]), (void*)&(x), sizeof(int)); 
@@ -370,8 +370,11 @@ RC BTNonLeafNode::insertAndSplit(int key, PageId pid, BTNonLeafNode& sibling, in
  */
 RC BTNonLeafNode::locateChildPtr(int searchKey, PageId& pid){ 
 	int eid=0;
-	locate(searchKey, eid);
-	pid = getPid(eid*8);
+	if(locate(searchKey, eid) < 0 ){
+		pid = getLastPid();
+	}else{
+		pid = getPid(eid*8);
+	}
 	return 0;
 }
 
@@ -394,6 +397,7 @@ RC BTNonLeafNode::initializeRoot(PageId pid1, int key, PageId pid2){
 	
 }*/
 int BTNonLeafNode::pidAt(int x){
+	cout<<"KeyCount is "<<keyCount<<" && PID is "<<x<<endl;
 	if(x<keyCount){
 		return getPid(x*8);
 	}else if(x==keyCount){
