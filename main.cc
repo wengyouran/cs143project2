@@ -28,12 +28,12 @@ int main()
 	myTree.open("matin",'w');
 	//myTree.insert(key,rid);
 	
-	for(int i=0; i<100; i++){
+	for(int i=0; i<166; i++){
 		myTree.insert(key,rid);
 		key+=2;
 	}
 	key = 2;
-	for(int i=0; i<100; i++){
+	for(int i=0; i<84; i++){
 		myTree.insert(key,rid);
 		key+=2;
 	}

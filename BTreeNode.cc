@@ -318,6 +318,9 @@ RC BTNonLeafNode::insert(int key, PageId pid){
 		insertPid(pid, firstByte);
 		insertKey(key, firstByte);
 		memcpy(((void*)(&buffer[firstByte+NON_LEAF_ENTRY_SIZE])), (void*)tempBuffer, copySize);
+		int x = getPid(firstByte+NON_LEAF_ENTRY_SIZE);//Magic Code
+		insertPid(x, firstByte);//Magic Code
+		insertPid(pid, firstByte+NON_LEAF_ENTRY_SIZE);//Magic Code
 		keyCount++;
 	}
 	return 0; 
@@ -412,6 +415,7 @@ int BTNonLeafNode::pidAt(int x){
 }
 int BTLeafNode::printKeys(){
 	int limit = getKeyCount()*LEAF_ENTRY_SIZE;
+	cout<<getKeyCount()<<endl;
 	for(int i=8; i<limit; i+=LEAF_ENTRY_SIZE){
 		cout<<*((int*)(&buffer[i]))<<", ";
 	}
