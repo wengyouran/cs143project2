@@ -361,7 +361,7 @@ RC BTNonLeafNode::insertAndSplit(int key, PageId pid, BTNonLeafNode& sibling, in
 	PageId tempPid;
 	midKey = getKey(moveAmnt*NON_LEAF_ENTRY_SIZE);
 	cout<<"Amount being moved is "<< moveAmnt<<" && Midkey is "<< midKey<< endl;
-	for(int i=moveAmnt; i<keyCount; i++){
+	for(int i=moveAmnt+1; i<keyCount; i++){
 		tempKey = getKey(i*NON_LEAF_ENTRY_SIZE);
 		tempPid=getPid(i*NON_LEAF_ENTRY_SIZE);
 		sibling.insert(tempKey,tempPid);

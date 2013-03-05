@@ -124,7 +124,9 @@ int BTreeIndex::insertRecursively(int &key, const RecordId& rid, int &height, Pa
 		if(currentNode.isNodeFull()){
 			BTNonLeafNode siblingNode;
 			int siblingKey;
+			//siblingNode.initializeRoot(leftPid,key,rightPid);
 			currentNode.insertAndSplit(key, nextPid, siblingNode, siblingKey);
+			siblingNode.initializeRoot(leftPid,key,rightPid);
 			currentNode.write(currentNode.getNodeId(), pf);
 			siblingNode.write(nextPid, pf);
 			rightPid = nextPid;
