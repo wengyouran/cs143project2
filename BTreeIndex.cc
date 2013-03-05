@@ -265,28 +265,24 @@ RC BTreeIndex::readForward(IndexCursor& cursor, int& key, RecordId& rid){
 
 /*Test Functions*/
 int BTreeIndex::printKeysR(int& height, int& pid){
-	cout<<"PRINTKEYS RECURSIVELY"<<endl;
 	if(height == 1){
-		cout<<"HEIGHT == 1"<<endl;
 		BTLeafNode leaf;
 		leaf.read(pid,pf);
 		leaf.printKeys();
 		return 0;
 	}
 	BTNonLeafNode nonleaf;
+	
 	nonleaf.read(pid,pf);
 	height = height -1;
-	cout<<nonleaf.getKeyCount()<<endl;
 	for(int i=0; i<=nonleaf.getKeyCount();i++){
 		pid = nonleaf.pidAt(i);
-		cout<<"           PID IS "<<pid<<endl;
 		printKeysR(height,pid);
 	}
 	return 0;
 	
 }
 int BTreeIndex::printKeys(){
-	cout<< "Print keys"<<endl;
 	int height = treeHeight;
 	int pid = rootPid;
 	return printKeysR(height, pid);

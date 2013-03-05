@@ -28,7 +28,7 @@ int main()
 	myTree.open("matin",'w');
 	//myTree.insert(key,rid);
 	
-	for(int i=0; i<85; i++){
+	for(int i=0; i<42*84+41; i++){
 		myTree.insert(key,rid);
 		key+=1;
 	}

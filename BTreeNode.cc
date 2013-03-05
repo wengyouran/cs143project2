@@ -265,6 +265,7 @@ RC BTNonLeafNode::write(PageId pid, PageFile& pf){
 	RC openError = 0;
 	if(openError != 0)
 		return openError;
+	memcpy((void*)(&buffer[PageFile::PAGE_SIZE-8]),(void*)&(keyCount), sizeof(int)); 
 	writeError = pf.write(pid, (void*)(buffer));
 	nonLeafNodePid = pid;
 	return writeError;
@@ -293,11 +294,16 @@ RC BTNonLeafNode::insert(int key, PageId pid){
 	}
 	int firstByte, lastByte;
 	insertError = locate(key, eidCompare);
-	if(insertError != 0 || eidCount == 0){
+	if(eidCount == 0){
 		lastByte = eidCount*8;
 		insertPid(pid, lastByte);
 		insertKey(key, lastByte);
-		cout<<"   Key Count is incremented!!!"<<endl;
+		keyCount++;
+	}else if(insertError < 0){
+		lastByte = eidCount*8;
+		insertPid(getLastPid(), lastByte);
+		insertKey(key, lastByte);
+		insertLastPid(pid);
 		keyCount++;
 	}else{
 		keyCompare = getKey(eidCompare);
@@ -313,7 +319,6 @@ RC BTNonLeafNode::insert(int key, PageId pid){
 		insertKey(key, firstByte);
 		memcpy(((void*)(&buffer[firstByte+NON_LEAF_ENTRY_SIZE])), (void*)tempBuffer, copySize);
 		keyCount++;
-		cout<<"   Key Count is incremented!!!"<<endl;
 	}
 	return 0; 
 }
@@ -389,6 +394,7 @@ RC BTNonLeafNode::initializeRoot(PageId pid1, int key, PageId pid2){
 	insertKey(key,0);
 	insertPid(pid1,0);
 	insertLastPid(pid2);
+	keyCount=1;
 	return 0;
 }
 
@@ -397,7 +403,6 @@ RC BTNonLeafNode::initializeRoot(PageId pid1, int key, PageId pid2){
 	
 }*/
 int BTNonLeafNode::pidAt(int x){
-	cout<<"KeyCount is "<<keyCount<<" && PID is "<<x<<endl;
 	if(x<keyCount){
 		return getPid(x*8);
 	}else if(x==keyCount){
@@ -405,7 +410,6 @@ int BTNonLeafNode::pidAt(int x){
 	}
 }
 int BTLeafNode::printKeys(){
-	cout<<"In Print Keys Leaf Node: keyCount is "<<getKeyCount()<<endl;
 	int limit = getKeyCount()*12;
 	for(int i=8; i<limit; i+=12){
 		cout<<*((int*)(&buffer[i]))<<", ";
