@@ -108,6 +108,7 @@ class BTreeIndex {
   /// is opened again later.
   
   int insertRecursively(int& key, const RecordId& rid, int &height, PageId &currentPid, PageId &rightPid);
+  int printInOrder(PageId somePid);
 };
 
 #endif /* BTREEINDEX_H */

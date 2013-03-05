@@ -23,6 +23,9 @@ class BTLeafNode {
   public:
 	BTLeafNode(){
 		keyCount = 0;
+		for(int i=0; i<(PageFile::PAGE_SIZE) ;i++){
+			*(int*)(&buffer[i])=0;
+		}
 	}
    /**
     * Insert the (key, rid) pair to the node.

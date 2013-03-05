@@ -277,14 +277,35 @@ int BTreeIndex::printKeysR(int& height, int& pid){
 	height = height -1;
 	for(int i=0; i<=nonleaf.getKeyCount();i++){
 		pid = nonleaf.pidAt(i);
-		cout<<"PRINTING FROM PID = " << pid<<" AT i = "<<i<<" with Key Count of ";
+		cout<<"PRINTING FROM PID = " << pid<<" AT i = "<<i<<" with Key Count of "<<endl;
 		printKeysR(height,pid);
 	}
 	return 0;
 	
 }
+int BTreeIndex::printInOrder(PageId somePid){
+	BTNonLeafNode nonleaf;
+	PageId pid = somePid;
+	int height = treeHeight;
+	while(height>1){
+		nonleaf.read(pid,pf);
+		pid = nonleaf.pidAt(0);
+		height--;
+	}
+	BTLeafNode leaf;
+	int i = 0;
+	while(pid != NULL){
+		leaf.read(pid,pf);
+		cout<<"PRINTING FROM PID = " << pid<<" AT i = "<<i<<" with Key Count of ";
+		leaf.printKeys();
+		pid = leaf.getNextNodePtr();
+		i++;
+	}
+	
+}
 int BTreeIndex::printKeys(){
 	int height = treeHeight;
 	int pid = rootPid;
-	return printKeysR(height, pid);
+	//return printKeysR(height, pid);
+	return printInOrder(pid);
 }
