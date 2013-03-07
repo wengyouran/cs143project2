@@ -360,7 +360,7 @@ RC BTNonLeafNode::insertAndSplit(int key, PageId pid, BTNonLeafNode& sibling, in
 	int tempKey;
 	PageId tempPid;
 	midKey = getKey(moveAmnt*NON_LEAF_ENTRY_SIZE);
-	cout<<"Amount being moved is "<< moveAmnt<<" && Midkey is "<< midKey<< endl;
+	//cout<<"Amount being moved is "<< moveAmnt<<" && Midkey is "<< midKey<< endl;
 	for(int i=moveAmnt+1; i<keyCount; i++){
 		tempKey = getKey(i*NON_LEAF_ENTRY_SIZE);
 		tempPid=getPid(i*NON_LEAF_ENTRY_SIZE);
@@ -415,11 +415,11 @@ int BTNonLeafNode::pidAt(int x){
 }
 int BTLeafNode::printKeys(){
 	int limit = getKeyCount()*LEAF_ENTRY_SIZE;
-	cout<<getKeyCount()<<endl;
+	//cout<<getKeyCount()<<endl;
 	for(int i=8; i<limit; i+=LEAF_ENTRY_SIZE){
-		cout<<*((int*)(&buffer[i]))<<", ";
+		//cout<<*((int*)(&buffer[i]))<<", ";
 	}
-	cout<<endl;
+	//cout<<endl;
 }
 /*int BTNonLeafNode::printKeys(){
 	
