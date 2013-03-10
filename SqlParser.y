@@ -7,6 +7,7 @@
 #include "Bruinbase.h"
 #include "SqlEngine.h" 
 #include "PageFile.h"
+#include <unistd.h>
 
 int  sqllex(void);  
 void sqlerror(const char *str) { fprintf(stderr, "Error: %s\n", str); }

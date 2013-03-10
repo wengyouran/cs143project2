@@ -11,6 +11,7 @@
 #include "PageFile.h"
 #include <fcntl.h>
 #include <sys/stat.h>
+#include <unistd.h>
 
 using std::string;
 

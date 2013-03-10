@@ -18,26 +18,6 @@
 int main()
 {
   // run the SQL engine taking user commands from standard input (console).
-  //SqlEngine::run(stdin);
-	BTreeIndex myTree = BTreeIndex();
-	//char buffer[PageFile::PAGE_SIZE];
-	RecordId rid;
-	rid.pid = 1;
-	rid.sid = 1;
-	int key = 1;
-	myTree.open("matin",'w');
-	//myTree.insert(key,rid);
-	
-	for(int i=0; i<(13000)/2; i++){
-		myTree.insert(key,rid);
-		key+=2;
-	}
-	key = 2;
-	for(int i=0; i<(13000)/2; i++){
-		myTree.insert(key,rid);
-		key+=2;
-	}
-	myTree.printKeys();
-	myTree.close();
+  SqlEngine::run(stdin);
   return 0;
 }
