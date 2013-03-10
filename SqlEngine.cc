@@ -94,8 +94,7 @@ RC SqlEngine::select(int attr, const string& table, const vector<SelCond>& cond)
             }
         }
     }
-                
-            
+                      
     if(!isFound)
         goto no_index;
     IndexCursor cursor;
@@ -104,7 +103,10 @@ RC SqlEngine::select(int attr, const string& table, const vector<SelCond>& cond)
         index.locate(-1, cursor);
         while((index.readForward(cursor, key, rid) == 0) && (key <= upperBound))
         {
-            rf.read(rid, key, value);
+            if ((rc = rf.read(rid, key, value)) < 0) {
+              fprintf(stderr, "Error: while reading a tuple from table %s\n", table.c_str());
+              goto exit_select;
+            }
             for (unsigned i = 0; i < cond.size(); i++) {
               // compute the difference between the tuple value and the condition value
               switch (cond[i].attr) {
@@ -142,7 +144,7 @@ RC SqlEngine::select(int attr, const string& table, const vector<SelCond>& cond)
             // the condition is met for the tuple.
             // increase matching tuple counter
             count++;
-
+            
             // print the tuple
             switch (attr) {
             case 1:  // SELECT key
@@ -164,7 +166,10 @@ RC SqlEngine::select(int attr, const string& table, const vector<SelCond>& cond)
         index.locate(lowerBound, cursor);
         while(index.readForward(cursor, key, rid) == 0)
         {
-            rf.read(rid, key, value);
+            if ((rc = rf.read(rid, key, value)) < 0) {
+              fprintf(stderr, "Error: while reading a tuple from table %s\n", table.c_str());
+              goto exit_select;
+            }
             for (unsigned i = 0; i < cond.size(); i++) {
               // compute the difference between the tuple value and the condition value
               switch (cond[i].attr) {
@@ -202,7 +207,6 @@ RC SqlEngine::select(int attr, const string& table, const vector<SelCond>& cond)
             // the condition is met for the tuple.
             // increase matching tuple counter
             count++;
-
             // print the tuple
             switch (attr) {
             case 1:  // SELECT key
@@ -224,7 +228,10 @@ RC SqlEngine::select(int attr, const string& table, const vector<SelCond>& cond)
         index.locate(lowerBound, cursor);
         while((index.readForward(cursor, key, rid) == 0) && (key <= upperBound))
         {
-            rf.read(rid, key, value);
+            if ((rc = rf.read(rid, key, value)) < 0) {
+              fprintf(stderr, "Error: while reading a tuple from table %s\n", table.c_str());
+              goto exit_select;
+            }
             for (unsigned i = 0; i < cond.size(); i++) {
               // compute the difference between the tuple value and the condition value
               switch (cond[i].attr) {
@@ -262,7 +269,6 @@ RC SqlEngine::select(int attr, const string& table, const vector<SelCond>& cond)
             // the condition is met for the tuple.
             // increase matching tuple counter
             count++;
-
             // print the tuple
             switch (attr) {
             case 1:  // SELECT key
