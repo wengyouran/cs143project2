@@ -43,10 +43,9 @@ RC BTLeafNode::getNodeId(){
  */
 RC BTLeafNode::read(PageId pid, PageFile& pf){ 
 	RC readError = 0;
-	RC openError = 0;
-	if(openError != 0)
-		return openError;
 	readError = pf.read(pid, (void*)buffer);
+	if(readError != 0)
+		return readError;
 	memcpy((int*)&(keyCount), (int*)(&buffer[PageFile::PAGE_SIZE-8]), sizeof(int)); 	
 	leafNodePid = pid;
 	return readError;
@@ -60,11 +59,10 @@ RC BTLeafNode::read(PageId pid, PageFile& pf){
  */
 RC BTLeafNode::write(PageId pid, PageFile& pf){ 
 	RC writeError = 0;
-	RC openError = 0;
-	if(openError != 0)
-		return openError;
 	memcpy((int*)(&buffer[PageFile::PAGE_SIZE-8]),(int*)&(keyCount), sizeof(int));
 	writeError = pf.write(pid, (void*)(buffer));
+	if(writeError != 0)
+		return writeError;
 	leafNodePid = pid;
 	return writeError; 
 }
@@ -157,7 +155,7 @@ RC BTLeafNode::locate(int searchKey, int& eid){
 	int count = getKeyCount();
 	int locateError = -1012;
 	for(int i=0; i<count; i++){
-		if(searchKey < getKey(i*LEAF_ENTRY_SIZE)){
+		if(searchKey <= getKey(i*LEAF_ENTRY_SIZE)){
 			eid = i;
 			locateError = 0;
 			break;

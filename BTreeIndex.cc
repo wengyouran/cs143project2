@@ -258,6 +258,8 @@ RC BTreeIndex::readForward(IndexCursor& cursor, int& key, RecordId& rid){
 	}
 	if(cursorEid >= leafPt.getKeyCount()-1){
 		cursor.pid = leafPt.getNextNodePtr();
+		if(cursor.pid == 0)
+		  return RC_INVALID_PID;
 		cursor.eid = 0;
 	}else{
 		cursor.eid++;
