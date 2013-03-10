@@ -12,6 +12,7 @@
 #include <fstream>
 #include "Bruinbase.h"
 #include "SqlEngine.h"
+#include "BTreeIndex.h"
 
 using namespace std;
 
@@ -128,11 +129,48 @@ RC SqlEngine::select(int attr, const string& table, const vector<SelCond>& cond)
   return rc;
 }
 
-RC SqlEngine::load(const string& table, const string& loadfile, bool index)
-{
-  /* your code here */
-
-  return 0;
+RC SqlEngine::load(const string& table, const string& loadfile, bool index){
+	RecordFile* recordfile = new RecordFile(table +".tbl",'w');
+	ifstream ifs;
+	ifs.open(loadfile.c_str());
+	string buff;
+    if(index == false){
+		  while(ifs.good()&&getline(ifs,buff,'\n')){
+			  RecordId rid;
+			  int key;
+			  string m_string;
+			  if(parseLoadLine(buff,key,m_string)==0){
+				  if (recordfile->append(key,m_string,rid)==0){
+					
+				  }else{
+					  return RC_FILE_WRITE_FAILED;
+				  }
+			  }else{
+				  return RC_INVALID_ATTRIBUTE;
+			  }
+		  }  
+    }else{
+		  string pfname = table + ".idx";
+		  BTreeIndex index;
+          index.open(pfname, 'w');
+		  while(ifs.good()&&getline(ifs,buff,'\n')){
+			  RecordId rid;
+			  int key;
+			  string m_string;
+			  if(parseLoadLine(buff,key,m_string)==0){
+				  if (recordfile->append(key,m_string,rid)==0){
+					  index.insert(key, rid);
+				  }else{
+					  return RC_FILE_WRITE_FAILED;
+				  }
+			  }else{
+				  return RC_INVALID_ATTRIBUTE;
+			  }
+		  }
+		  index.close();
+    }
+	recordfile->close();
+	delete(recordfile);
 }
 
 RC SqlEngine::parseLoadLine(const string& line, int& key, string& value)

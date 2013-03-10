@@ -296,7 +296,7 @@ int BTreeIndex::printInOrder(PageId somePid){
 	}
 	BTLeafNode leaf;
 	int i = 0;
-	while(pid != NULL){
+	while(pid != 0){
 		leaf.read(pid,pf);
 		//cout<<"PRINTING FROM PID = " << pid<<" AT i = "<<i<<" with Key Count of ";
 		leaf.printKeys();
