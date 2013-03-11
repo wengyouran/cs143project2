@@ -43,7 +43,8 @@ RC SqlEngine::select(int attr, const string& table, const vector<SelCond>& cond)
   string value;
   int    count;
   int    diff;
-
+  bool   isIndexed = false;
+  bool lastOne = true;
   // open the table file
   if ((rc = rf.open(table + ".tbl", 'r')) < 0) {
     fprintf(stderr, "Error: table %s does not exist\n", table.c_str());
@@ -53,6 +54,7 @@ RC SqlEngine::select(int attr, const string& table, const vector<SelCond>& cond)
   BTreeIndex index;
   if(index.open(table + ".idx", 'r') == 0)    //if index exists
   {
+    isIndexed = true;
     count = 0;
     int k;
     int lowerBound = -1;
@@ -103,6 +105,11 @@ RC SqlEngine::select(int attr, const string& table, const vector<SelCond>& cond)
         index.locate(-1, cursor);
         while((index.readForward(cursor, key, rid) == 0) && (key <= upperBound))
         {
+            /*Indexed Count*/
+            if(attr==4 && key!=upperBound){
+              count++;
+              continue;
+            }
             if ((rc = rf.read(rid, key, value)) < 0) {
               fprintf(stderr, "Error: while reading a tuple from table %s\n", table.c_str());
               goto exit_select;
@@ -163,9 +170,20 @@ RC SqlEngine::select(int attr, const string& table, const vector<SelCond>& cond)
     }
     else if(!haveUpperBound)
     {
+        
         index.locate(lowerBound, cursor);
-        while(index.readForward(cursor, key, rid) == 0)
+        while(index.readForward(cursor, key, rid) == 0 || lastOne)
         {
+            if(cursor.pid == 0){
+              lastOne=false;
+            }else{
+              lastOne=true;
+            }
+            /*Indexed Count*/
+            if(attr==4){
+              count++;
+              continue;
+            }
             if ((rc = rf.read(rid, key, value)) < 0) {
               fprintf(stderr, "Error: while reading a tuple from table %s\n", table.c_str());
               goto exit_select;
@@ -225,9 +243,15 @@ RC SqlEngine::select(int attr, const string& table, const vector<SelCond>& cond)
     }
     else
     {
+        bool lastOne = true;
         index.locate(lowerBound, cursor);
-        while((index.readForward(cursor, key, rid) == 0) && (key <= upperBound))
+        while((index.readForward(cursor, key, rid) == 0 || lastOne) && (key <= upperBound))
         {
+            if(cursor.pid == 0){
+              lastOne=false;
+            }else{
+              lastOne=true;
+            }
             if ((rc = rf.read(rid, key, value)) < 0) {
               fprintf(stderr, "Error: while reading a tuple from table %s\n", table.c_str());
               goto exit_select;
@@ -300,6 +324,24 @@ RC SqlEngine::select(int attr, const string& table, const vector<SelCond>& cond)
       // scan the table file from the beginning
       rid.pid = rid.sid = 0;
       count = 0;
+      /*Indexed Count*/
+      if(isIndexed){
+        if(attr==4){
+          IndexCursor cursor;
+          index.locate(-1, cursor);
+          while(index.readForward(cursor, key, rid) == 0 || lastOne){
+            if(cursor.pid == 0){
+              lastOne=false;
+            }else{
+              lastOne=true;
+            }
+            count++;
+          }
+          fprintf(stdout, "%d\n", count);
+          goto closing_section;
+        }
+        index.close();
+      }
       while (rid < rf.endRid()) {
         // read the tuple
         if ((rc = rf.read(rid, key, value)) < 0) {
@@ -372,7 +414,7 @@ RC SqlEngine::select(int attr, const string& table, const vector<SelCond>& cond)
   }
 
  
- 
+  closing_section:
   // close the table file and return
   exit_select:
   rf.close();
